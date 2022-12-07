@@ -1,5 +1,7 @@
 package com.felhr.usbserial;
 
+import static java.sql.DriverManager.println;
+
 import com.felhr.deviceids.CH34xIds;
 import com.felhr.deviceids.CP210xIds;
 import com.felhr.deviceids.FTDISioIds;
@@ -11,6 +13,8 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbRequest;
+import android.os.SystemClock;
+import android.util.Log;
 
 public abstract class UsbSerialDevice implements UsbSerialInterface
 {
@@ -28,7 +32,11 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
     protected final UsbDevice device;
     protected final UsbDeviceConnection connection;
 
-    protected static final int USB_TIMEOUT = 4000;
+    // write timeout higher until confidence gained of a reasonable value
+    // initial testing: 0-2 ms for writes
+    // the other timeout is only for control commands and small to prevent ANRs / pointless waits
+    private static final int USB_WRITE_TIMEOUT = 1000;
+    protected static final int USB_TIMEOUT = 100;
 
     protected SerialBuffer serialBuffer;
 
@@ -371,7 +379,7 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
         {
             byte[] data = serialBuffer.getWriteBuffer();
             if(data.length > 0)
-                connection.bulkTransfer(outEndpoint, data, data.length, USB_TIMEOUT);
+                connection.bulkTransfer(outEndpoint, data, data.length, USB_WRITE_TIMEOUT);
         }
 
         public void setUsbEndpoint(UsbEndpoint outEndpoint)
