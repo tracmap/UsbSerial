@@ -1,7 +1,5 @@
 package com.felhr.usbserial;
 
-import static java.sql.DriverManager.println;
-
 import com.felhr.deviceids.CH34xIds;
 import com.felhr.deviceids.CP210xIds;
 import com.felhr.deviceids.FTDISioIds;
@@ -13,8 +11,6 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbRequest;
-import android.os.SystemClock;
-import android.util.Log;
 
 public abstract class UsbSerialDevice implements UsbSerialInterface
 {
@@ -227,6 +223,11 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
     // Serial port configuration
     @Override
     public abstract void setBaudRate(int baudRate);
+    public int setBaudRateChecked(int baudRate) {
+        setBaudRate(baudRate);
+        // override only implemented for ftdi
+        return 0;
+    }
     @Override
     public abstract void setDataBits(int dataBits);
     @Override

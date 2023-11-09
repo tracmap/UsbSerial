@@ -194,13 +194,19 @@ public class FTDISerialDevice extends UsbSerialDevice
     @Override
     public void setBaudRate(int baudRate)
     {
-        short[] encodedBaudRate = encodedBaudRate(baudRate);
+        // ENCODED BAUD RATE METHOD BREAKS GPS PORT IN QUAD FTDI, INTRODUCED IN 6.0.6
+        //short[] encodedBaudRate = encodedBaudRate(baudRate);
+        //if(encodedBaudRate != null) {
+        //    setEncodedBaudRate(encodedBaudRate);
+        //}else{
+        setOldBaudRate(baudRate);
+        //}
+    }
 
-        if(encodedBaudRate != null) {
-            setEncodedBaudRate(encodedBaudRate);
-        }else{
-            setOldBaudRate(baudRate);
-        }
+    @Override
+    public int setBaudRateChecked(int baudRate)
+    {
+        return setOldBaudRate(baudRate);
     }
 
     @Override
@@ -821,8 +827,8 @@ public class FTDISerialDevice extends UsbSerialDevice
                 , encodedBaudRate[0], encodedBaudRate[1], null, 0, USB_TIMEOUT);
     }
 
-    private void setOldBaudRate(int baudRate) {
-        int value = 0;
+    private int setOldBaudRate(int baudRate) {
+        int value;
         if(baudRate >= 0 && baudRate <= 300 )
             value = FTDI_BAUDRATE_300;
         else if(baudRate > 300 && baudRate <= 600)
@@ -854,6 +860,6 @@ public class FTDISerialDevice extends UsbSerialDevice
         else
             value = FTDI_BAUDRATE_9600;
 
-        setControlCommand(FTDI_SIO_SET_BAUD_RATE, value, 0);
+        return setControlCommand(FTDI_SIO_SET_BAUD_RATE, value, 0);
     }
 }
