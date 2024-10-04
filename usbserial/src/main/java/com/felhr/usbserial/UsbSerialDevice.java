@@ -11,6 +11,8 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbRequest;
+import android.os.Build;
+import android.util.Log;
 
 public abstract class UsbSerialDevice implements UsbSerialInterface
 {
@@ -24,7 +26,7 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
 
     // Android version < 4.3 It is not going to be asynchronous read operations
     static final boolean mr1Version =
-            android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+            Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1;
     protected final UsbDevice device;
     protected final UsbDeviceConnection connection;
 
@@ -320,7 +322,12 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
         @Override
         public void doRun()
         {
-            UsbRequest request = connection.requestWait();
+            UsbRequest request = null;
+            try {
+                request = connection.requestWait();
+            } catch (Exception e) {
+                Log.e("UsbSerialDevice", "Error requesting USB connection: "+ e.getMessage());
+            }
             if(request != null && request.getEndpoint().getType() == UsbConstants.USB_ENDPOINT_XFER_BULK
                     && request.getEndpoint().getDirection() == UsbConstants.USB_DIR_IN)
             {
