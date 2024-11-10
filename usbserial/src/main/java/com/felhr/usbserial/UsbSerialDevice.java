@@ -46,6 +46,8 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
     private UsbEndpoint inEndpoint;
     private UsbEndpoint outEndpoint;
 
+    protected int maxPacketSize;
+
     // InputStream and OutputStream (only for sync api)
     protected SerialInputStream inputStream;
     protected SerialOutputStream outputStream;
@@ -342,7 +344,7 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
 
                     if(data.length > 2)
                     {
-                        data = FTDISerialDevice.adaptArray(data);
+                        data = FTDISerialDevice.adaptArray(data, maxPacketSize);
                         onReceivedData(data);
                     }
                 }else
@@ -436,7 +438,7 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
 
                     if(dataReceived.length > 2)
                     {
-                        dataReceived = FTDISerialDevice.adaptArray(dataReceived);
+                        dataReceived = FTDISerialDevice.adaptArray(dataReceived, maxPacketSize);
                         onReceivedData(dataReceived);
                     }
                 }else

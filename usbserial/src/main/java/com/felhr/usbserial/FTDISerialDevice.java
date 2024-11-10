@@ -137,6 +137,8 @@ public class FTDISerialDevice extends UsbSerialDevice
 
             asyncMode = true;
             isOpen = true;
+            maxPacketSize = inEndpoint.getMaxPacketSize();
+            Log.i(CLASS_ID, "open -  maxPacketSize: "+maxPacketSize);
 
             return true;
         }else
@@ -172,6 +174,9 @@ public class FTDISerialDevice extends UsbSerialDevice
             outputStream = new SerialOutputStream(this);
 
             isOpen = true;
+
+            maxPacketSize = inEndpoint.getMaxPacketSize();
+            Log.i(CLASS_ID, "syncOpen -  maxPacketSize: "+maxPacketSize);
 
             return true;
         }else
@@ -496,22 +501,22 @@ public class FTDISerialDevice extends UsbSerialDevice
     }
 
     // Special treatment needed to FTDI devices
-    static byte[] adaptArray(byte[] ftdiData)
+    static byte[] adaptArray(byte[] ftdiData, int maxPacketSize)
     {
         int length = ftdiData.length;
-        if(length > 64)
+        if(length > maxPacketSize)
         {
             int n = 1;
-            int p = 64;
+            int p = maxPacketSize;
             // Precalculate length without FTDI headers
             while(p < length)
             {
                 n++;
-                p = n*64;
+                p = n*maxPacketSize;
             }
             int realLength = length - n*2;
             byte[] data = new byte[realLength];
-            copyData(ftdiData, data);
+            copyData(ftdiData, data, maxPacketSize);
             return data;
         }
         else if (length == 2) // special case optimization that returns the same instance.
@@ -525,19 +530,20 @@ public class FTDISerialDevice extends UsbSerialDevice
     }
 
     // Copy data without FTDI headers
-    private static void copyData(byte[] src, byte[] dst)
+    private static void copyData(byte[] src, byte[] dst, int maxPacketSize)
     {
-        int srcPos = 2, dstPos = 0;
-        while(srcPos - 2 <= src.length - 64)
+        int headerSize = 2;
+        int srcPos = headerSize, dstPos = 0;
+        while(srcPos - headerSize <= src.length - maxPacketSize)
         {
-            System.arraycopy(src, srcPos, dst, dstPos, 62);
-            srcPos += 64;
-            dstPos += 62;
+            System.arraycopy(src, srcPos, dst, dstPos, maxPacketSize - headerSize);
+            srcPos += maxPacketSize;
+            dstPos += (maxPacketSize - headerSize);
         }
-        int remaining = src.length - srcPos + 2;
+        int remaining = src.length - srcPos + headerSize;
         if (remaining > 0)
         {
-            System.arraycopy(src, srcPos, dst, dstPos, remaining - 2);
+            System.arraycopy(src, srcPos, dst, dstPos, remaining - headerSize);
         }
     }
 
@@ -660,11 +666,11 @@ public class FTDISerialDevice extends UsbSerialDevice
 
             if(numberBytes > 2) // Data received
             {
-                byte[] newBuffer = adaptArray(tempBuffer);
+                byte[] newBuffer = adaptArray(tempBuffer, maxPacketSize);
                 System.arraycopy(newBuffer, 0, buffer, 0, buffer.length);
 
-                int p = numberBytes / 64;
-                if(numberBytes % 64 != 0)
+                int p = numberBytes / maxPacketSize;
+                if(numberBytes % maxPacketSize != 0)
                 {
                     p++;
                 }
