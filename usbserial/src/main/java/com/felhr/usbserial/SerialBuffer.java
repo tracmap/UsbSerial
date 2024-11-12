@@ -8,7 +8,7 @@ import okio.Buffer;
 
 public class SerialBuffer
 {
-    static final int DEFAULT_READ_BUFFER_SIZE = 2 * 1024;
+    static final int DEFAULT_READ_BUFFER_SIZE = 16 * 1024;
     static final int MAX_BULK_BUFFER = 16 * 1024;
     private ByteBuffer readBuffer;
 
