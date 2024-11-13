@@ -362,7 +362,7 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
                     onReceivedData(data);
                 }
                 // Queue a new request
-                requestIN.queue(serialBuffer.getReadBuffer(), SerialBuffer.DEFAULT_READ_BUFFER_SIZE);
+                if (requestIN != null) requestIN.queue(serialBuffer.getReadBuffer(), SerialBuffer.DEFAULT_READ_BUFFER_SIZE);
             }
         }
 
