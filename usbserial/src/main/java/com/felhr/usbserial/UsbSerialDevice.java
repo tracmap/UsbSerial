@@ -57,6 +57,8 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
     private String portName = "";
     protected boolean isOpen;
 
+    private boolean isReading = false;
+
     public UsbSerialDevice(UsbDevice device, UsbDeviceConnection connection)
     {
         this.device = device;
@@ -174,7 +176,13 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
         {
             if (workerThread != null) {
                 workerThread.setCallback(mCallback);
-                workerThread.getUsbRequest().queue(serialBuffer.getReadBuffer(), SerialBuffer.DEFAULT_READ_BUFFER_SIZE);
+                if (!isReading) {
+                    isReading = true;
+                    // We only need to send this request once rather than on each read() call
+                    // This is because the worker thread will requeue the request once data has been read
+                    // Sending the request multiple times causes buffer overflow and memory corruption on Tab Active5
+                    workerThread.getUsbRequest().queue(serialBuffer.getReadBuffer(), SerialBuffer.DEFAULT_READ_BUFFER_SIZE);
+                }
             }
         }else
         {
@@ -483,6 +491,7 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
      */
     protected void killWorkingThread()
     {
+        isReading = false;
         if(mr1Version && workerThread != null)
         {
             workerThread.stopThread();
