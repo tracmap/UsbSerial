@@ -12,6 +12,7 @@ import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbRequest;
 import android.os.Build;
+import android.os.SystemClock;
 import android.util.Log;
 
 public abstract class UsbSerialDevice implements UsbSerialInterface
@@ -323,10 +324,12 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
 
         private UsbReadCallback callback;
         private UsbRequest requestIN;
+        private Long timeLastDataReceived = 0L;
 
         public WorkerThread(UsbSerialDevice usbSerialDevice)
         {
             this.usbSerialDevice = usbSerialDevice;
+            this.setPriority(Thread.MAX_PRIORITY);
         }
 
         @Override
@@ -342,6 +345,10 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
                     && request.getEndpoint().getDirection() == UsbConstants.USB_DIR_IN)
             {
                 byte[] data = serialBuffer.getDataReceived();
+                if (serialBuffer.debugging) {
+                    Log.e("UsbSerialDevice", "Time since last read: " + (SystemClock.elapsedRealtime() - timeLastDataReceived));
+                    timeLastDataReceived = SystemClock.elapsedRealtime();
+                }
 
                 // FTDI devices reserves two first bytes of an IN endpoint with info about
                 // modem and Line.
