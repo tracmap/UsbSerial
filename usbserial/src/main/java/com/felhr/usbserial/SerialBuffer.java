@@ -101,8 +101,8 @@ public class SerialBuffer
         {
             if(src == null || src.length == 0) return;
 
-            if(debugging)
-                UsbSerialDebugger.printLogPut(src, true);
+//            if(debugging)
+//                UsbSerialDebugger.printLogPut(src, true);
 
             buffer.write(src);
             notify();
@@ -133,8 +133,8 @@ public class SerialBuffer
                 }
             }
 
-            if(debugging)
-                UsbSerialDebugger.printLogGet(dst, true);
+//            if(debugging)
+//                UsbSerialDebugger.printLogGet(dst, true);
 
             return dst;
         }

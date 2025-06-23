@@ -17,6 +17,7 @@ import android.util.Log;
 
 public abstract class UsbSerialDevice implements UsbSerialInterface
 {
+    public static final String LOG_TAG = "UsbSerial";
     public static final String CDC = "cdc";
     public static final String CH34x = "ch34x";
     public static final String CP210x = "cp210x";
@@ -339,14 +340,14 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
             try {
                 request = connection.requestWait();
             } catch (Exception e) {
-                Log.e("UsbSerialDevice", "Error requesting USB connection: "+ e.getMessage());
+                Log.e(LOG_TAG, "Error requesting USB connection: "+ e.getMessage());
             }
             if(request != null && request.getEndpoint().getType() == UsbConstants.USB_ENDPOINT_XFER_BULK
                     && request.getEndpoint().getDirection() == UsbConstants.USB_DIR_IN)
             {
                 byte[] data = serialBuffer.getDataReceived();
                 if (serialBuffer.debugging) {
-                    Log.i("UsbSerialDevice", "Time since last read: " + (SystemClock.elapsedRealtime() - timeLastDataReceived));
+                    Log.i(LOG_TAG, "Time since last read: " + (SystemClock.elapsedRealtime() - timeLastDataReceived));
                     timeLastDataReceived = SystemClock.elapsedRealtime();
                 }
 
