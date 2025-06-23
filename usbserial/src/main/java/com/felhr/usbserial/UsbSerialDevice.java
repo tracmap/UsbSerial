@@ -347,7 +347,9 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
             {
                 byte[] data = serialBuffer.getDataReceived();
                 if (serialBuffer.debugging) {
-                    Log.i(LOG_TAG, "Time since last read: " + (SystemClock.elapsedRealtime() - timeLastDataReceived));
+                    if (timeLastDataReceived > 0) {
+                        Log.i(LOG_TAG, "Time since last read: " + (SystemClock.elapsedRealtime() - timeLastDataReceived));
+                    }
                     timeLastDataReceived = SystemClock.elapsedRealtime();
                 }
 

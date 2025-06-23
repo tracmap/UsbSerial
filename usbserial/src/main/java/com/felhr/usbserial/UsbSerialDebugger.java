@@ -6,7 +6,7 @@ import android.util.Log;
 
 public class UsbSerialDebugger
 {
-    public static final String LOG_TAG = "UsbSerial";
+    private static final String LOG_TAG = "UsbSerial";
     public static final String ENCODING = "UTF-8";
 
     private UsbSerialDebugger()
