@@ -8,13 +8,13 @@ import okio.Buffer;
 
 public class SerialBuffer
 {
-    static final int DEFAULT_READ_BUFFER_SIZE = 2 * 1024;
+    static final int DEFAULT_READ_BUFFER_SIZE = 4 * 1024;
     static final int MAX_BULK_BUFFER = 16 * 1024;
     private ByteBuffer readBuffer;
 
     private final SynchronizedBuffer writeBuffer;
     private byte[] readBufferCompatible; // Read buffer for android < 4.2
-    private boolean debugging = false;
+    boolean debugging = false;
 
     public SerialBuffer(boolean version)
     {
@@ -101,8 +101,8 @@ public class SerialBuffer
         {
             if(src == null || src.length == 0) return;
 
-            if(debugging)
-                UsbSerialDebugger.printLogPut(src, true);
+//            if(debugging)
+//                UsbSerialDebugger.printLogPut(src, true);
 
             buffer.write(src);
             notify();
@@ -133,8 +133,8 @@ public class SerialBuffer
                 }
             }
 
-            if(debugging)
-                UsbSerialDebugger.printLogGet(dst, true);
+//            if(debugging)
+//                UsbSerialDebugger.printLogGet(dst, true);
 
             return dst;
         }

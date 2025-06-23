@@ -12,10 +12,12 @@ import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbRequest;
 import android.os.Build;
+import android.os.SystemClock;
 import android.util.Log;
 
 public abstract class UsbSerialDevice implements UsbSerialInterface
 {
+    public static final String LOG_TAG = "UsbSerial";
     public static final String CDC = "cdc";
     public static final String CH34x = "ch34x";
     public static final String CP210x = "cp210x";
@@ -323,10 +325,12 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
 
         private UsbReadCallback callback;
         private UsbRequest requestIN;
+        private Long timeLastDataReceived = 0L;
 
         public WorkerThread(UsbSerialDevice usbSerialDevice)
         {
             this.usbSerialDevice = usbSerialDevice;
+            this.setPriority(Thread.MAX_PRIORITY);
         }
 
         @Override
@@ -336,12 +340,18 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
             try {
                 request = connection.requestWait();
             } catch (Exception e) {
-                Log.e("UsbSerialDevice", "Error requesting USB connection: "+ e.getMessage());
+                Log.e(LOG_TAG, "Error requesting USB connection: "+ e.getMessage());
             }
             if(request != null && request.getEndpoint().getType() == UsbConstants.USB_ENDPOINT_XFER_BULK
                     && request.getEndpoint().getDirection() == UsbConstants.USB_DIR_IN)
             {
                 byte[] data = serialBuffer.getDataReceived();
+                if (serialBuffer.debugging) {
+                    if (timeLastDataReceived > 0) {
+                        Log.i(LOG_TAG, "Time since last read: " + (SystemClock.elapsedRealtime() - timeLastDataReceived));
+                    }
+                    timeLastDataReceived = SystemClock.elapsedRealtime();
+                }
 
                 // FTDI devices reserves two first bytes of an IN endpoint with info about
                 // modem and Line.
