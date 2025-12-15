@@ -23,6 +23,7 @@ public class FTDISerialDevice extends UsbSerialDevice
     private static final int FTDI_SIO_SET_FLOW_CTRL = 2;
     private static final int FTDI_SIO_SET_BAUD_RATE = 3;
     private static final int FTDI_SIO_SET_DATA = 4;
+    private static final int FTDI_SIO_SET_LATENCY_TIMER = 9;
 
     private static final int FTDI_REQTYPE_HOST2DEVICE = 0x40;
 
@@ -830,11 +831,12 @@ public class FTDISerialDevice extends UsbSerialDevice
 
     private void setEncodedBaudRate(short[] encodedBaudRate) {
         connection.controlTransfer(FTDI_REQTYPE_HOST2DEVICE, FTDI_SIO_SET_BAUD_RATE
-                , encodedBaudRate[0], encodedBaudRate[1], null, 0, USB_TIMEOUT);
+                , encodedBaudRate[0], mInterface.getId() + 1 + encodedBaudRate[1], null, 0, USB_TIMEOUT);
     }
 
     private int setOldBaudRate(int baudRate) {
         int value;
+        int timeout = 16; // ftdi default
         if(baudRate >= 0 && baudRate <= 300 )
             value = FTDI_BAUDRATE_300;
         else if(baudRate > 300 && baudRate <= 600)
@@ -849,23 +851,30 @@ public class FTDISerialDevice extends UsbSerialDevice
             value = FTDI_BAUDRATE_9600;
         else if(baudRate > 9600 && baudRate <=19200)
             value = FTDI_BAUDRATE_19200;
-        else if(baudRate > 19200 && baudRate <= 38400)
+        else if(baudRate > 19200 && baudRate <= 38400) {
+            timeout = 12;
             value = FTDI_BAUDRATE_38400;
-        else if(baudRate > 19200 && baudRate <= 57600)
+        } else if(baudRate > 19200 && baudRate <= 57600) {
+            timeout = 8;
             value = FTDI_BAUDRATE_57600;
-        else if(baudRate > 57600 && baudRate <= 115200)
+        } else if(baudRate > 57600 && baudRate <= 115200) {
+            timeout = 4;
             value = FTDI_BAUDRATE_115200;
-        else if(baudRate > 115200 && baudRate <= 230400)
+        } else if(baudRate > 115200 && baudRate <= 230400) {
+            timeout = 2;
             value = FTDI_BAUDRATE_230400;
-        else if(baudRate > 230400 && baudRate <= 460800)
+        } else if(baudRate > 230400 && baudRate <= 460800) {
+            timeout = 2;
             value = FTDI_BAUDRATE_460800;
-        else if(baudRate > 460800 && baudRate <= 921600)
+        } else if(baudRate > 460800 && baudRate <= 921600) {
+            timeout = 2;
             value = FTDI_BAUDRATE_921600;
-        else if(baudRate > 921600)
+        } else if(baudRate > 921600) {
+            timeout = 2;
             value = FTDI_BAUDRATE_921600;
-        else
+        } else
             value = FTDI_BAUDRATE_9600;
 
-        return setControlCommand(FTDI_SIO_SET_BAUD_RATE, value, 0);
+        return setControlCommand(FTDI_SIO_SET_LATENCY_TIMER, timeout, 0) + setControlCommand(FTDI_SIO_SET_BAUD_RATE, value, 0);
     }
 }
